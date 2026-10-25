@@ -1,0 +1,79 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="structure_0">
+    <static>true</static>
+    <link name="link">
+
+      <!-- First Element -->
+      <!-- collision1 removed 2026-08-28: Structure1.stl is a 13,004-triangle concave
+           mesh (frame/truss), a real per-step physics cost with no payoff, since the arm and
+           plants never get close enough to this piece to need collision against it.
+           visual1 below is untouched, so the frame still renders identically. -->
+      <visual name="visual1">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://structure_0/meshes/Structure1.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0 0 0 1</ambient>  
+	  <diffuse>0 0 0 1</diffuse>
+	  <specular>0.1 0.1 0.1 0.2</specular> 
+	  <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+
+      <!-- Second Element -->
+      <collision name="collision2">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://structure_0/meshes/Structure2.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual2">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://structure_0/meshes/Structure2.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.7 0.9 1 0.3</ambient>  
+          <diffuse>0.7 0.9 1 0.3</diffuse>  
+          <specular>0.9 0.9 0.9 0.1</specular> 
+          <emissive>0 0 0 0</emissive> 
+          <transparency>0.3</transparency> 
+        </material>
+      </visual>
+
+      <!-- Third Element -->
+      <collision name="collision3">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://structure_0/meshes/Structure3.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual3">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://structure_0/meshes/Structure3.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.5 0.5 0.5 1.0</ambient>  
+	  <diffuse>0.5 0.5 0.5 1.0</diffuse>
+	  <specular>0.5 0.5 0.5 1.0</specular> 
+	  <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+
+    </link>
+  </model>
+</sdf>
+
