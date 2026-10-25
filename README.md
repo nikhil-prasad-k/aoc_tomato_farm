@@ -1,5 +1,24 @@
 # Tomato Farm/Glasshouse Generator/Simulator
 
+> **Fork note.** This fork of [LCAS/aoc_tomato_farm](https://github.com/LCAS/aoc_tomato_farm)
+> is used by [tomato-harvest-sim](https://github.com/nikhil-prasad-k/tomato-harvest-sim).
+> Changes, all in `gz_tomato_farm_generator/`:
+>
+> *General fixes and additions*
+> - `blender/tomato_gen.py`: fruit group `b_07` was never exported, and fruit marker positions
+>   were off by metres (stale `matrix_parent_inverse` after moving the stem).
+> - `cookiecutter.json` (all templates): mesh and texture files are copied verbatim instead
+>   of being rendered through Jinja.
+> - `scripts/split_fruit_instances.py` + tomato template: per-tomato semantic labels for
+>   Gazebo Sim segmentation cameras. It also draws mesh nodes that the template's exact
+>   `<submesh>` names silently skipped (including full-size trusses).
+> - `scripts/generate_glass_house.py`: the generator notebook as a plain script.
+>
+> *Project-specific (tomato-harvest-sim)*
+> - Lamp: neutral grey instead of purple, shadows off. Structure: frame collision mesh
+>   removed. World: Ogre1 render engine, standalone camera models and their GUI panels removed.
+> - `generated/farm_2mx3m`: the generated farm the project uses.
+
 This package is a tomato farm/glasshouse generator/simulator compatible with both **Gazebo** and **Unity** in ROS2 as part of the Agri-open Core (AOC) project. This repository consists of four key parts:
 
 1) Random tomato farm generator in Unity
