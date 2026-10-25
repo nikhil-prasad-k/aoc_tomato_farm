@@ -1,5 +1,6 @@
 {
     "world_name": "WORLD NAME",
     "soilbed_name": "soilbed_name",
-    "models": "models"
+    "models": "models",
+    "_copy_without_render": ["*/meshes/*"]
 }

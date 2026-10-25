@@ -131,7 +131,7 @@ class PrebuiltMeshes:
 
 
     def get_end_stem_mesh(self, growth):
-        groups = ['b_04', 'b_05', 'b_06', 'b_08']
+        groups = ['b_04', 'b_05', 'b_06', 'b_07', 'b_08']
         prefix = groups[np.random.choice(len(groups))]
         stems = filter_prefix(self.sub_stems, prefix)
         growths = np.array(list(map(lambda ob: ob.location[2], stems)))
@@ -154,12 +154,30 @@ def gen_end_stem(collection, location: (float, float, float), yaw: float, growth
     })
     ob_stem = filter_prefix(bpy.context.selected_objects, 'b_')[0]
     ob_fruits = filter_prefix(ob_stem.children, 'pose_fruit')
-    
+
+    # ob_fruits' matrix_parent_inverse is baked against ob_stem's pre-duplicate
+    # library position. Directly reassigning ob_stem.location/rotation below
+    # moves the parent without updating that stale inverse, which corrupts the
+    # fruit markers' world position (off by meters) if read back via ob.location
+    # later. Capture each fruit's correct pose relative to the stem now, before
+    # the move, and compute its final world position directly by matrix math
+    # rather than relying on Blender's object-transform properties (which stay
+    # stale/inconsistent afterward because of that same parent_inverse bake).
+    bpy.context.view_layer.update()
+    pre_move_stem_matrix = ob_stem.matrix_world.copy()
+    fruit_rel_transforms = [
+        pre_move_stem_matrix.inverted() @ ob.matrix_world.copy() for ob in ob_fruits]
+
     ob_stem.select_set(False)
     if location is not None:
         ob_stem.location = location
     if yaw is not None:
         ob_stem.rotation_euler[2] += yaw
+
+    bpy.context.view_layer.update()
+    post_move_stem_matrix = ob_stem.matrix_world.copy()
+    fruit_positions = [
+        tuple((post_move_stem_matrix @ rel).translation) for rel in fruit_rel_transforms]
 
     collection.objects.link(ob_stem)
     coll_sub_stems.objects.unlink(ob_stem)
@@ -167,7 +185,7 @@ def gen_end_stem(collection, location: (float, float, float), yaw: float, growth
         collection.objects.link(ob)
         coll_sub_stems.objects.unlink(ob)
 
-    return ob_stem, ob_fruits
+    return ob_stem, ob_fruits, fruit_positions
 
 
 
@@ -180,17 +198,19 @@ def gen_plant(write_results=False, keep_materials=False):
 
     ob_meshes = [ob_main_stem]
     ob_fruits = []
+    fruit_positions = []
 
 
 
     for node in nodes[1:]:
-        ob_m, ob_f = gen_end_stem(
-            collection, 
-            location = (node.x, node.y, node.z), 
+        ob_m, ob_f, ob_f_positions = gen_end_stem(
+            collection,
+            location = (node.x, node.y, node.z),
             yaw = node.yaw,
             growth = node.z / nodes[-1].z)
         ob_meshes.append(ob_m)
         ob_fruits += ob_f
+        fruit_positions += ob_f_positions
 
 
 
@@ -205,10 +225,9 @@ def gen_plant(write_results=False, keep_materials=False):
         markers.append(marker)
 
 
+    for position in fruit_positions:
+        add_marker(position)
     for ob in ob_fruits:
-        bpy.ops.object.parent_clear(
-            {'selected_objects': [ob]}, type='CLEAR_KEEP_TRANSFORM')
-        add_marker(ob.location)
         bpy.ops.object.delete({'selected_objects': [ob]}, use_global=True)
 
     bpy.ops.object.join({

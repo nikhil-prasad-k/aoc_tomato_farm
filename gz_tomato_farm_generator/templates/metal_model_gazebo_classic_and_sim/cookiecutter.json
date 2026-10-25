@@ -1,5 +1,6 @@
 {
     "world_name": "WORLD NAME",
     "metal_name": "metal_name",
-    "models": "models"
+    "models": "models",
+    "_copy_without_render": ["*/meshes/*"]
 }
