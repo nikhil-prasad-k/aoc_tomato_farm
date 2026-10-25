@@ -100,6 +100,10 @@
             </metal>
           </pbr>
         </material>
+        <!-- semantic label for segmentation cameras (fruit = 1); Gazebo Sim / Ogre2 only -->
+        <plugin filename="gz-sim-label-system" name="gz::sim::systems::Label">
+          <label>1</label>
+        </plugin>
       </visual>
       <visual name="fruit2">
         <geometry>
@@ -123,6 +127,10 @@
             </metal>
           </pbr>
         </material>
+        <!-- semantic label for segmentation cameras (fruit = 1); Gazebo Sim / Ogre2 only -->
+        <plugin filename="gz-sim-label-system" name="gz::sim::systems::Label">
+          <label>1</label>
+        </plugin>
       </visual>
       <visual name="fruit3">
         <geometry>
@@ -146,6 +154,10 @@
             </metal>
           </pbr>
         </material>
+        <!-- semantic label for segmentation cameras (fruit = 1); Gazebo Sim / Ogre2 only -->
+        <plugin filename="gz-sim-label-system" name="gz::sim::systems::Label">
+          <label>1</label>
+        </plugin>
       </visual>
       <visual name="fruit4">
         <geometry>
@@ -169,6 +181,10 @@
             </metal>
           </pbr>
         </material>
+        <!-- semantic label for segmentation cameras (fruit = 1); Gazebo Sim / Ogre2 only -->
+        <plugin filename="gz-sim-label-system" name="gz::sim::systems::Label">
+          <label>1</label>
+        </plugin>
       </visual>
       <visual name="blossom1">
         <geometry>
