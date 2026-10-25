@@ -22,7 +22,7 @@
       </visual>
 
       <light name='lightComponent' type='point'>
-        <diffuse>0.37 0.203 0.513 1</diffuse>
+        <diffuse>0.26 0.26 0.26 1</diffuse>
         <specular>0.1 0.1 0.1 1</specular>
         <attenuation>
           <range>7</range>
@@ -30,7 +30,10 @@
           <linear>{{cookiecutter.light_linear}}</linear>
           <quadratic>{{cookiecutter.light_quadratic}}</quadratic>
         </attenuation>
-        <cast_shadows>1</cast_shadows>
+        <!-- shadows disabled 2026-08-28: 6 shadow-casting point lights was a real render
+             cost (point-light shadows need a multi-pass cubemap render, x6), for minimal
+             visual payoff under a diffuse glasshouse roof. Light itself is unchanged. -->
+        <cast_shadows>0</cast_shadows>
         <direction>0 0 -1</direction>
       </light>
 

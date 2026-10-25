@@ -12,7 +12,7 @@
     <plugin
       filename="gz-sim-sensors-system"
       name="gz::sim::systems::Sensors">
-      <render_engine>ogre2</render_engine>
+      <render_engine>ogre</render_engine>
     </plugin>
     <plugin
       filename="gz-sim-user-commands-system"
@@ -137,27 +137,9 @@
         </gz-gui>
       </plugin>
 
-      <plugin filename="ImageDisplay" name="Image Display">
-        <gz-gui>
-          <title>RGB camera</title>
-          <property key="state" type="string">floating</property>
-          <property type="double" key="width">350</property>
-          <property type="double" key="height">315</property>
-        </gz-gui>
-        <topic>camera</topic>
-        <topic_picker>false</topic_picker>
-      </plugin>
-      <plugin filename="ImageDisplay" name="Image Display 2">
-        <gz-gui>
-          <title>Depth camera</title>
-          <property key="state" type="string">floating</property>
-          <property type="double" key="width">350</property>
-          <property type="double" key="height">315</property>
-          <property type="double" key="x">500</property>
-        </gz-gui>
-        <topic>depth_camera</topic>
-        <topic_picker>false</topic_picker>
-      </plugin>
+      <!-- "RGB camera" (topic camera) and "Depth camera" (topic depth_camera) panels
+           removed 2026-08-28 along with their source sensors (camera_with_lidar's RGB
+           camera, cameras_alone). Only the arm-mounted rgbd_camera panels remain below. -->
       <plugin filename="ImageDisplay" name="Image Display 3">
         <gz-gui>
           <title>RGBD: image</title>
@@ -210,71 +192,16 @@
       <direction>-0.5 0.1 -0.9</direction>
     </light>
     
-    <model name="cameras_alone">
-      <pose>0 1.0 2.0 0.0 0.3 3.14</pose>
-      <link name="link">
-        <pose>0.05 0.05 0.05 0 0 0</pose>
-        <inertial>
-          <mass>0.1</mass>
-          <inertia>
-            <ixx>0.000166667</ixx>
-            <iyy>0.000166667</iyy>
-            <izz>0.000166667</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.1 0.1 0.1</size>
-            </box>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.1 0.1 0.1</size>
-            </box>
-          </geometry>
-        </visual>
-        <sensor name="cameras_alone" type="camera">
-          <camera>
-            <horizontal_fov>1.047</horizontal_fov>
-            <image>
-              <width>320</width>
-              <height>240</height>
-            </image>
-            <clip>
-              <near>0.1</near>
-              <far>100</far>
-            </clip>
-          </camera>
-          <always_on>1</always_on>
-          <update_rate>30</update_rate>
-          <visualize>true</visualize>
-          <topic>camera_alone</topic>
-          <enable_metrics>true</enable_metrics>
-        </sensor>
-        <sensor name="depth_camera1" type="depth_camera">
-          <update_rate>10</update_rate>
-          <topic>depth_camera</topic>
-          <enable_metrics>true</enable_metrics>
-          <camera>
-            <horizontal_fov>1.05</horizontal_fov>
-            <image>
-              <width>320</width>
-              <height>240</height>
-              <format>R_FLOAT32</format>
-            </image>
-            <clip>
-              <near>0.1</near>
-              <far>10.0</far>
-            </clip>
-          </camera>
-          </sensor>
-      </link>
-      <static>true</static>
-    </model>
+    <!-- cameras_alone (RGB + depth_camera1) removed 2026-08-28: leftover generator
+         scaffolding, duplicate of the arm-mounted rgbd_camera, no other use in this
+         project. See ur5e_picker_arm.urdf.xacro's wrist_camera_link for the one real
+         RGB-D sensor. -->
 
+    <!-- camera_with_lidar commented out 2026-08-28: nothing in this project currently
+         consumes lidar data (vision-force fusion is RGB-D based), and the gpu_lidar
+         sensor computes 640 rays x10Hz every step regardless of subscribers. Its RGB
+         camera was already removed earlier the same session (duplicate of the arm's
+         rgbd_camera). Uncomment whenever lidar is actually needed.
     <model name="camera_with_lidar">
       <pose>0 -1.0 2.0 0.0 0.3 3.14</pose>
       <link name="link">
@@ -301,25 +228,8 @@
             </box>
           </geometry>
         </visual>
-        <sensor name="camera" type="camera">
-          <camera>
-            <horizontal_fov>1.047</horizontal_fov>
-            <image>
-              <width>320</width>
-              <height>240</height>
-            </image>
-            <clip>
-              <near>0.1</near>
-              <far>100</far>
-            </clip>
-          </camera>
-          <always_on>1</always_on>
-          <update_rate>30</update_rate>
-          <visualize>true</visualize>
-          <topic>camera</topic>
-        </sensor>
 
-        <sensor name='gpu_lidar' type='gpu_lidar'>"
+        <sensor name='gpu_lidar' type='gpu_lidar'>
           <topic>lidar</topic>
           <update_rate>10</update_rate>
           <enable_metrics>true</enable_metrics>
@@ -351,53 +261,11 @@
 
       <static>true</static>
     </model>
+    -->
 
-    <model name="rgbd_camera">
-      <pose>0 5.0 2.0 0.0 0.3 3.14</pose>
-      <link name="link">
-        <pose>0.05 0.05 0.05 0 0 0</pose>
-        <inertial>
-          <mass>0.1</mass>
-          <inertia>
-            <ixx>0.000166667</ixx>
-            <iyy>0.000166667</iyy>
-            <izz>0.000166667</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.1 0.1 0.1</size>
-            </box>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.1 0.1 0.1</size>
-            </box>
-          </geometry>
-        </visual>
-        <sensor name="rgbd_camera" type="rgbd_camera">
-          <camera>
-            <horizontal_fov>1.047</horizontal_fov>
-            <image>
-              <width>320</width>
-              <height>240</height>
-            </image>
-            <clip>
-              <near>0.1</near>
-              <far>100</far>
-            </clip>
-          </camera>
-          <always_on>1</always_on>
-          <update_rate>30</update_rate>
-          <visualize>true</visualize>
-          <topic>rgbd_camera</topic>
-          <enable_metrics>true</enable_metrics>
-        </sensor>
-      </link>
-    </model>
+    <!-- rgbd_camera used to be a standalone world-fixed model here. Removed (2026-08-28,
+         guide task E1): it's now mounted eye-in-hand on the arm's gripper instead, so the
+         RGB-D feed tracks the end-effector rather than sitting fixed in the world. -->
 
     <!--<model name="thermal_camera">
       <pose>0 -3.0 2.0 0.0 0.3 3.14</pose>

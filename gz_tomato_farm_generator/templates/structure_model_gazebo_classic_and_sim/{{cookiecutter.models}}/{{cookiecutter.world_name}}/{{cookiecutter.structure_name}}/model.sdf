@@ -5,14 +5,10 @@
     <link name="link">
 
       <!-- First Element -->
-      <collision name="collision1">
-        <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>model://{{cookiecutter.structure_name}}/meshes/Structure1.stl</uri>
-          </mesh>
-        </geometry>
-      </collision>
+      <!-- collision1 removed 2026-08-28: Structure1.stl is a 13,004-triangle concave
+           mesh (frame/truss), a real per-step physics cost with no payoff, since the arm and
+           plants never get close enough to this piece to need collision against it.
+           visual1 below is untouched, so the frame still renders identically. -->
       <visual name="visual1">
         <geometry>
           <mesh>
