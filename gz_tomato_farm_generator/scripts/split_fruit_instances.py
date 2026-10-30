@@ -13,6 +13,12 @@ Why (found 2026-10-11 while building a segmentation-labelled dataset):
 - All of a plant's tomatoes sit in a few per-material meshes, so a segmentation camera
   can't tell touching tomatoes apart. Each connected component of a fruit mesh is one
   tomato, so splitting by connectivity gives one visual (and one label) per tomato.
+- (2026-10-30) The library's fruit meshes are inside out: triangles wound inwards and
+  normals pointing inwards. With back-face culling every camera sees the far half of each
+  tomato from the inside; colour images look normal (the inward normals face the camera),
+  but depth images show the back surface (centre depth ~ fruit centre + radius) and a
+  tomato does not hide what sits inside its outline. Inside-out tomatoes (negative enclosed
+  volume) get their winding reversed and normals negated.
 
 Per plant directory (tomato_*):
 - reads meshes/tomato.dae and model.sdf.orig (model.sdf is copied there on first run),
@@ -91,9 +97,10 @@ def split_components(mesh):
     return p, voff, comps
 
 
-def compact_geometry(geom, p, comp, new_id):
+def compact_geometry(geom, p, comp, new_id, flip=False):
     """Copy of `geom` holding only triangles `comp`, with every source cut down to the rows
-    those triangles use and indices remapped."""
+    those triangles use and indices remapped. flip: reverse the winding and negate the
+    normals (turn an inside-out closed mesh right side out)."""
     g = copy.deepcopy(geom)
     g.set("id", new_id)
     g.set("name", new_id)
@@ -112,16 +119,21 @@ def compact_geometry(geom, p, comp, new_id):
             ids = [inp.get("source")[1:]]
         by_offset.setdefault(off, set()).update(ids)
     new_p = sub.copy()
+    normal_off = {int(i.get("offset")) for i in tri.findall(NS + "input") if i.get("semantic") == "NORMAL"}
     for off, ids in by_offset.items():
         used, remap = np.unique(sub[:, :, off], return_inverse=True)
         new_p[:, :, off] = remap.reshape(sub.shape[:2])
         for sid in ids:
             src = sources[sid]
             rows = float_rows(src)[used]
+            if flip and off in normal_off:
+                rows = -rows
             fa = src.find(NS + "float_array")
             fa.text = " ".join(f"{x:.6g}" for x in rows.ravel())
             fa.set("count", str(rows.size))
             src.find(f"{NS}technique_common/{NS}accessor").set("count", str(len(rows)))
+    if flip:
+        new_p = new_p[:, ::-1, :]
     tri.set("count", str(len(comp)))
     tri.find(NS + "p").text = " ".join(map(str, new_p.ravel()))
     # keep ids unique across the file
@@ -132,6 +144,13 @@ def compact_geometry(geom, p, comp, new_id):
         if el.get("source", "").startswith("#") and el is not g:
             el.set("source", f"#{new_id}-{el.get('source')[1:]}")
     return g, sub
+
+
+def signed_volume(tri_pts):
+    """Volume enclosed by a closed triangle mesh [n, 3, 3]: negative when it is inside out."""
+    c = tri_pts.reshape(-1, 3).mean(0)
+    a, b, d = tri_pts[:, 0] - c, tri_pts[:, 1] - c, tri_pts[:, 2] - c
+    return float(np.einsum("ij,ij->i", a, np.cross(b, d)).sum() / 6)
 
 
 def process_plant(plant_dir, next_label, instances):
@@ -149,6 +168,7 @@ def process_plant(plant_dir, next_label, instances):
     scene = root.find(f"{NS}library_visual_scenes/{NS}visual_scene")
 
     visuals = []  # (node_name, base_visual, label or None)
+    n_flipped = 0
     for node in list(scene):
         if node.tag != NS + "node":
             continue
@@ -172,7 +192,9 @@ def process_plant(plant_dir, next_label, instances):
         for k, comp in enumerate(comps):
             safe = re.sub(r"[^A-Za-z0-9_]", "_", name)
             gid = f"{safe}__t{k:02d}-mesh"
-            g, sub = compact_geometry(geom, p, comp, gid)
+            flip = signed_volume(positions[p[comp][:, :, voff]]) < 0
+            n_flipped += flip
+            g, sub = compact_geometry(geom, p, comp, gid, flip)
             lib_geom.append(g)
             n = copy.deepcopy(node)
             n_name = f"{name}__t{k:02d}"
@@ -227,7 +249,7 @@ def process_plant(plant_dir, next_label, instances):
               " one per mesh node, one per tomato (labelled) -->\n")
     sdf_path.write_text(sdf_text[:first] + header + "".join(out) + sdf_text[last:])
     n_fruit = sum(1 for v in visuals if v[2] is not None)
-    print(f"{model}: {len(visuals)} visuals ({n_fruit} tomatoes)")
+    print(f"{model}: {len(visuals)} visuals ({n_fruit} tomatoes, {n_flipped} turned right side out)")
     return next_label
 
 
